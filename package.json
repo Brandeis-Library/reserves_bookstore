@@ -1,0 +1,17 @@
+{
+  "name": "brandeis_reserves_bookstore",
+  "version": "1.0.0",
+  "description": "Reads an Excel spreadsheet containing booklist for classesand checks ExLibris Alma to see if we have an item in the collection.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "exlibris",
+    "alma",
+    "reserves",
+    "bookstore"
+  ],
+  "author": "Chris Underwood, Library Applications Developer, Brandeis University",
+  "license": "MIT"
+}
