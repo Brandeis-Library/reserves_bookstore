@@ -13,5 +13,8 @@
     "bookstore"
   ],
   "author": "Chris Underwood, Library Applications Developer, Brandeis University",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "xlsx": "^0.16.8"
+  }
 }
