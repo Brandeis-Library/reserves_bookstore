@@ -40,7 +40,7 @@ XLSX = require('xlsx');
 
     // write headers for to_Be_Purchased.csv
     fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'as' }).write(
-      `ISBN + \n`
+      `ISBN  \n`
     );
 
     // write headers for already_Owned.csv
