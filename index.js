@@ -23,11 +23,20 @@ XLSX = require('xlsx');
       console.log('Saved to_be_Purchased!');
     });
 
+    // Ensure creation of not_Relevant before truncating
+    fs.appendFile('./not_Relevant.csv', '', function (err) {
+      if (err) throw err;
+      console.log('Saved not_Relevant!');
+    });
+
     // Truncate to_Be_Purchased before appending
     fs.truncateSync('./to_Be_Purchased.csv');
 
     // Truncate already_Owned before appending
     fs.truncateSync('./already_Owned.csv');
+
+    // Truncate not_Relevant before appending
+    fs.truncateSync('./not_Relevant.csv');
 
     // write headers for to_Be_Purchased.csv
     fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'as' }).write(
@@ -45,7 +54,7 @@ XLSX = require('xlsx');
         let iggy = item.ISBN;
         if (!iggy) {
           iggy = 'Not Applicable';
-          fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'a' }).write(
+          fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
             iggy + '\n'
           );
           return;
