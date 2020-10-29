@@ -1,5 +1,6 @@
 const fs = require('fs');
-XLSX = require('xlsx');
+const XLSX = require('xlsx');
+const axios = require('axios');
 
 (async function () {
   const workbook = XLSX.readFile('TestData.xlsx');
@@ -40,30 +41,37 @@ XLSX = require('xlsx');
 
     // write headers for to_Be_Purchased.csv
     fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'as' }).write(
-      `ISBN  \n`
+      `ISBN, Title, Author  \n`
     );
 
     // write headers for already_Owned.csv
-    fs.createWriteStream('./already_Owned.csv', { flags: 'as' }).write(
-      `ISBN  \n`
+    fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
+      `ISBN, Title, Author   \n`
     );
-    setTimeout(function () {
-      // For each loop to go over each object in the sheet
-      df.forEach(item => {
-        //console.log('item.ISBN ----  ', item.ISBN);
-        let iggy = item.ISBN;
-        if (!iggy) {
-          iggy = 'Not Applicable';
-          fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
-            iggy + '\n'
-          );
-          return;
-        }
-        fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
+
+    // For each loop to go over each object in the sheet
+    let arrayISBNS = await df.forEach(async item => {
+      //console.log('item.ISBN ----  ', item.ISBN);
+      let iggy = item.ISBN;
+      if (!iggy) {
+        iggy = 'Not Applicable';
+        fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
           iggy + '\n'
         );
-      });
-    }, 3000);
+        return;
+      }
+      try {
+        const results = await axios.get(
+          `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=9780385349949`
+        );
+
+        fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
+          iggy + ',' + results.data + '\n'
+        );
+      } catch (error) {
+        console.log('Error inside call to Ex Libris  *************** ', error);
+      }
+    });
   } catch (error) {
     console.log('ERROR -------- ', error);
   }
