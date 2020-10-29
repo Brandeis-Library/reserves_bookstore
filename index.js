@@ -30,6 +30,12 @@ const axios = require('axios');
       console.log('Saved not_Relevant!');
     });
 
+    // Ensure creation of errors before truncating
+    fs.appendFile('./errors.csv', '', function (err) {
+      if (err) throw err;
+      console.log('Saved errors.csv');
+    });
+
     // Truncate to_Be_Purchased before appending
     fs.truncateSync('./to_Be_Purchased.csv');
 
@@ -39,8 +45,16 @@ const axios = require('axios');
     // Truncate not_Relevant before appending
     fs.truncateSync('./not_Relevant.csv');
 
+    // Truncate errors before appending
+    fs.truncateSync('./errors.csv');
+
     // write headers for to_Be_Purchased.csv
     fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'as' }).write(
+      `ISBN, Title, Author  \n`
+    );
+
+    // write headers for errors.csv
+    fs.createWriteStream('./errors.csv', { flags: 'as' }).write(
       `ISBN, Title, Author  \n`
     );
 
@@ -62,7 +76,7 @@ const axios = require('axios');
       }
       try {
         const results = await axios.get(
-          `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=9780385349949`
+          `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${iggy}`
         );
 
         fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
@@ -70,6 +84,7 @@ const axios = require('axios');
         );
       } catch (error) {
         console.log('Error inside call to Ex Libris  *************** ', error);
+        fs.createWriteStream('./errors.csv', { flags: 'a' }).write(iggy + '\n');
       }
     });
   } catch (error) {
