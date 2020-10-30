@@ -16,6 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.0",
-    "xlsx": "^0.16.8"
+    "xlsx": "^0.16.8",
+    "xmldom": "^0.4.0",
+    "xpath": "0.0.32"
   }
 }

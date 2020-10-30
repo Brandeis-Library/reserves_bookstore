@@ -1,6 +1,8 @@
 const fs = require('fs');
 const XLSX = require('xlsx');
 const axios = require('axios');
+const xpath = require('xpath');
+const dom = require('xmldom').DOMParser;
 
 (async function () {
   const workbook = XLSX.readFile('TestData.xlsx');
@@ -78,9 +80,25 @@ const axios = require('axios');
         const results = await axios.get(
           `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${iggy}`
         );
-
+        let data = results.data;
+        //data = data.toString();
+        console.log('doc +++++++++++++++++  ', data);
+        const doc = new dom().parseFromString(data, 'text/html');
+        //console.log('doc +++++++++++++++++  ', doc);
+        const select = xpath.useNamespaces({
+          x: 'http://www.loc.gov/zing/srw/',
+        });
+        let nodes = select('//x:numberOfRecords/text()', doc);
+        console.log('nodes---- ', nodes);
         fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-          iggy + ',' + results.data + '\n'
+          iggy +
+            ', nodes: ' +
+            nodes +
+            ',' +
+            'typeof results.data' +
+            ',' +
+            results.data +
+            '\n'
         );
       } catch (error) {
         console.log('Error inside call to Ex Libris  *************** ', error);
