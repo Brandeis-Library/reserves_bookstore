@@ -62,13 +62,15 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for already_Owned.csv
     fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-      `ISBN, Title, Author   \n`
+      `Documents,ISBN, Title, Author   \n`
     );
 
     // For each loop to go over each object in the sheet
     let arrayISBNS = await df.forEach(async item => {
       //console.log('item.ISBN ----  ', item.ISBN);
       let iggy = item.ISBN;
+      let title = item.TITLE;
+      let author = item.AUTHOR;
       if (!iggy) {
         iggy = 'Not Applicable';
         fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
@@ -91,14 +93,7 @@ const dom = require('xmldom').DOMParser;
         let nodes = select('//x:numberOfRecords/text()', doc);
         console.log('nodes---- ', nodes);
         fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-          iggy +
-            ', nodes: ' +
-            nodes +
-            ',' +
-            'typeof results.data' +
-            ',' +
-            results.data +
-            '\n'
+          nodes + ',' + iggy + ',' + title + ',' + author + ',' + '\n'
         );
       } catch (error) {
         console.log('Error inside call to Ex Libris  *************** ', error);
