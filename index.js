@@ -52,12 +52,12 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for to_Be_Purchased.csv
     fs.createWriteStream('./to_Be_Purchased.csv', { flags: 'as' }).write(
-      `ISBN, Title, Author  \n`
+      `Documents, ISBN, Title, Author  \n`
     );
 
     // write headers for errors.csv
     fs.createWriteStream('./errors.csv', { flags: 'as' }).write(
-      `ISBN, Title, Author  \n`
+      `Documents, ISBN, Title, Author  \n`
     );
 
     // write headers for already_Owned.csv
