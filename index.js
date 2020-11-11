@@ -62,15 +62,22 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for already_Owned.csv
     fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-      `Documents,ISBN, Title, Author   \n`
+      `Documents,ISBN,Title,Author,Year Pub,Req-Rec   \n`
     );
 
     // For each loop to go over each object in the sheet
     let arrayISBNS = await df.forEach(async item => {
       //console.log('item.ISBN ----  ', item.ISBN);
+      console.log('item ----  ', item);
       let iggy = item.ISBN;
       let title = item.TITLE;
       let author = item.AUTHOR;
+      let year = item.CY;
+      let itemStatus = item.TERM_USE;
+
+      if (!year) {
+        year = 'N/A';
+      }
       if (!iggy) {
         iggy = 'Not Applicable';
         fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
@@ -84,16 +91,28 @@ const dom = require('xmldom').DOMParser;
         );
         let data = results.data;
         //data = data.toString();
-        console.log('doc +++++++++++++++++  ', data);
+        //console.log('doc +++++++++++++++++  ', data);
         const doc = new dom().parseFromString(data, 'text/html');
         //console.log('doc +++++++++++++++++  ', doc);
         const select = xpath.useNamespaces({
           x: 'http://www.loc.gov/zing/srw/',
         });
         let nodes = select('//x:numberOfRecords/text()', doc);
-        console.log('nodes---- ', nodes);
+        //console.log('nodes---- ', nodes);
         fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-          nodes + ',' + iggy + ',' + title + ',' + author + ',' + '\n'
+          nodes +
+            ',' +
+            iggy +
+            ',' +
+            title +
+            ',' +
+            author +
+            ',' +
+            year +
+            ',' +
+            itemStatus +
+            ',' +
+            '\n'
         );
       } catch (error) {
         console.log('Error inside call to Ex Libris  *************** ', error);
