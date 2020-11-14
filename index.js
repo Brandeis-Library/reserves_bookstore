@@ -98,36 +98,47 @@ const dom = require('xmldom').DOMParser;
       return obj;
     });
     let basicObjs = await Promise.all(arrayISBNS);
-    console.log('basicObjs-----', basicObjs);
+    //console.log('basicObjs-----', basicObjs);
+    fs.createWriteStream('./errors.csv', { flags: 'a' }).write(
+      '\n\n\n' +
+        'basicObjs.length: ' +
+        basicObjs.length +
+        '\n\n\n' +
+        JSON.stringify(basicObjs)
+    );
 
-    // try {
-
-    //     console.log('item ----------------- ', item);
-    //   });
-    // } catch (error) {
-    //   console.error(error);
-    // }
     try {
       const completedObjs = basicObjs.map(async item => {
+        console.log('completedObjs item +++++++++++ ', item);
         if (item.iggy !== 'Not Applicable') {
           const results = await axios.get(
             `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${item.iggy}`
           );
-          let data = results.data;
+          let data = await results.data;
           //data = data.toString();
           //console.log('doc +++++++++++++++++  ', data);
-          const doc = new dom().parseFromString(data, 'text/html');
+
+          const doc = await new dom().parseFromString(data, 'text/html');
+          fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
+            doc + '\n\n'
+          );
           //console.log('doc +++++++++++++++++  ', doc);
-          const select = xpath.useNamespaces({
+          const select = await xpath.useNamespaces({
             x: 'http://www.loc.gov/zing/srw/',
           });
-          let nodes = select('//x:numberOfRecords/text()', doc);
-          //console.log('nodes---- ', nodes);
-          item.nodes = nodes[0].toString();
+          console.log;
+          let nodes = await select('//x:numberOfRecords/text()', doc);
+          console.log('nodes---- ', nodes, item.iggy);
+          item.nodes = nodes.toString();
+          console.log('item.nodes +++++++++++++++++  ', item.nodes, item.iggy);
+          return item;
         }
       });
       let objsToPrint = await Promise.all(completedObjs);
-      console.log('objsToPrint -------- ', objsToPrint);
+      //console.log('objsToPrint -------- ', objsToPrint[900]);
+      fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
+        JSON.stringify(objsToPrint)
+      );
 
       // fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
       //   classInfo +
@@ -148,7 +159,9 @@ const dom = require('xmldom').DOMParser;
       // );
     } catch (error) {
       console.log('Error inside call to Ex Libris  *************** ', error);
-      fs.createWriteStream('./errors.csv', { flags: 'a' }).write(iggy + '\n');
+      fs.createWriteStream('./errors.csv', { flags: 'a' }).write(
+        error.message + '\n'
+      );
     }
 
     //console.log('arrayISBNS ========== ', arrayISBNS);
