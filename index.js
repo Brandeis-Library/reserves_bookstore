@@ -13,6 +13,7 @@ const dom = require('xmldom').DOMParser;
   var df = XLSX.utils.sheet_to_json(
     workbook.Sheets[sheetNames[sheetIndex - 1]]
   );
+
   try {
     // Ensure creation of alreadyOwned before truncating
     fs.appendFile('./already_Owned.csv', '', function (err) {
@@ -62,63 +63,95 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for already_Owned.csv
     fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-      `Documents,ISBN,Title,Author,Year Pub,Req-Rec   \n`
+      `Class,Documents,ISBN,Title,Author,Year Pub,Req-Rec   \n`
     );
 
     // For each loop to go over each object in the sheet
-    let arrayISBNS = await df.forEach(async item => {
+    let classInfo;
+    let arrayISBNS = df.map(async item => {
+      const obj = {};
       //console.log('item.ISBN ----  ', item.ISBN);
-      console.log('item ----  ', item);
-      let iggy = item.ISBN;
-      let title = item.TITLE;
-      let author = item.AUTHOR;
-      let year = item.CY;
-      let itemStatus = item.TERM_USE;
+      //console.log('item ----  ', item);
 
-      if (!year) {
-        year = 'N/A';
+      obj.iggy = item.ISBN;
+      obj.title = item.TITLE;
+      obj.author = item.AUTHOR;
+      obj.year = item.YEAR;
+      obj.itemStatus = item.TERM_USE;
+
+      if (item.COURSE.length > 0) {
+        classInfo = item.COURSE;
+      } else {
+        obj.classInfo = classInfo;
       }
-      if (!iggy) {
-        iggy = 'Not Applicable';
+
+      if (!item.YEAR) {
+        obj.year = 'N/A';
+      }
+
+      if (!item.ISBN) {
+        obj.iggy = 'Not Applicable';
         fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
-          iggy + '\n'
+          obj.iggy + '\n'
         );
-        return;
       }
-      try {
-        const results = await axios.get(
-          `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${iggy}`
-        );
-        let data = results.data;
-        //data = data.toString();
-        //console.log('doc +++++++++++++++++  ', data);
-        const doc = new dom().parseFromString(data, 'text/html');
-        //console.log('doc +++++++++++++++++  ', doc);
-        const select = xpath.useNamespaces({
-          x: 'http://www.loc.gov/zing/srw/',
-        });
-        let nodes = select('//x:numberOfRecords/text()', doc);
-        //console.log('nodes---- ', nodes);
-        fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-          nodes +
-            ',' +
-            iggy +
-            ',' +
-            title +
-            ',' +
-            author +
-            ',' +
-            year +
-            ',' +
-            itemStatus +
-            ',' +
-            '\n'
-        );
-      } catch (error) {
-        console.log('Error inside call to Ex Libris  *************** ', error);
-        fs.createWriteStream('./errors.csv', { flags: 'a' }).write(iggy + '\n');
-      }
+      return obj;
     });
+    let basicObjs = await Promise.all(arrayISBNS);
+    console.log('basicObjs-----', basicObjs);
+
+    // try {
+
+    //     console.log('item ----------------- ', item);
+    //   });
+    // } catch (error) {
+    //   console.error(error);
+    // }
+    try {
+      const completedObjs = basicObjs.map(async item => {
+        if (item.iggy !== 'Not Applicable') {
+          const results = await axios.get(
+            `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${item.iggy}`
+          );
+          let data = results.data;
+          //data = data.toString();
+          //console.log('doc +++++++++++++++++  ', data);
+          const doc = new dom().parseFromString(data, 'text/html');
+          //console.log('doc +++++++++++++++++  ', doc);
+          const select = xpath.useNamespaces({
+            x: 'http://www.loc.gov/zing/srw/',
+          });
+          let nodes = select('//x:numberOfRecords/text()', doc);
+          //console.log('nodes---- ', nodes);
+          item.nodes = nodes[0].toString();
+        }
+      });
+      let objsToPrint = await Promise.all(completedObjs);
+      console.log('objsToPrint -------- ', objsToPrint);
+
+      // fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
+      //   classInfo +
+      //     ',' +
+      //     nodes +
+      //     ',' +
+      //     iggy +
+      //     ',' +
+      //     title +
+      //     ',' +
+      //     author +
+      //     ',' +
+      //     year +
+      //     ',' +
+      //     itemStatus +
+      //     ',' +
+      //     '\n'
+      // );
+    } catch (error) {
+      console.log('Error inside call to Ex Libris  *************** ', error);
+      fs.createWriteStream('./errors.csv', { flags: 'a' }).write(iggy + '\n');
+    }
+
+    //console.log('arrayISBNS ========== ', arrayISBNS);
   } catch (error) {
     console.log('ERROR -------- ', error);
   }
@@ -130,5 +163,6 @@ const dom = require('xmldom').DOMParser;
   // Consider getting rid of the IFEE if it is not needed.
 
   //console.log('data ----------------------- ', df);
+  //console.log('arrayISBNS ========== ', arrayISBNS);
   console.log('Can you see me now?');
 })();
