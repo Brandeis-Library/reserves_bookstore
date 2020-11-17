@@ -88,9 +88,7 @@ const dom = require('xmldom').DOMParser;
       //console.log('item ----  ', item);
 
       obj.iggy = item.ISBN;
-      obj.title = item.TITLE;
       obj.author = item.AUTHOR;
-      obj.year = item.YEAR;
       obj.itemStatus = item.TERM_USE;
 
       if (item.COURSE.length > 0) {
@@ -99,8 +97,14 @@ const dom = require('xmldom').DOMParser;
         obj.classInfo = classInfo;
       }
 
-      if (!item.YEAR) {
+      if (!item.CY) {
         obj.year = 'N/A';
+      } else {
+        obj.year = item.CY;
+      }
+
+      if (item.TITLE) {
+        obj.title = await item.TITLE.replace(/,/g, '');
       }
 
       if (!item.ISBN) {
