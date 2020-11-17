@@ -21,6 +21,12 @@ const dom = require('xmldom').DOMParser;
       console.log('Saved already_Owned!');
     });
 
+    // Ensure creation of final before truncating
+    fs.appendFile('./final.csv', '', function (err) {
+      if (err) throw err;
+      console.log('Saved final!');
+    });
+
     // Ensure creation of to_Be_Purchased before truncating
     fs.appendFile('./to_Be_Purchased.csv', '', function (err) {
       if (err) throw err;
@@ -41,6 +47,9 @@ const dom = require('xmldom').DOMParser;
 
     // Truncate to_Be_Purchased before appending
     fs.truncateSync('./to_Be_Purchased.csv');
+
+    // Truncate final before appending
+    fs.truncateSync('./final.csv');
 
     // Truncate already_Owned before appending
     fs.truncateSync('./already_Owned.csv');
@@ -64,6 +73,11 @@ const dom = require('xmldom').DOMParser;
     // write headers for already_Owned.csv
     fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
       `Class,Documents,ISBN,Title,Author,Year Pub,Req-Rec   \n`
+    );
+
+    // write headers for final.csv
+    fs.createWriteStream('./final.csv', { flags: 'a' }).write(
+      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents   \n`
     );
 
     // For each loop to go over each object in the sheet
@@ -139,24 +153,30 @@ const dom = require('xmldom').DOMParser;
       fs.createWriteStream('./not_Relevant.csv', { flags: 'a' }).write(
         JSON.stringify(objsToPrint)
       );
+      objsToPrint.map(item => {
+        console.log('item inside objsToPrint', item);
+        if (item) {
+          let classInfoFinal = item.classInfo;
 
-      // fs.createWriteStream('./already_Owned.csv', { flags: 'a' }).write(
-      //   classInfo +
-      //     ',' +
-      //     nodes +
-      //     ',' +
-      //     iggy +
-      //     ',' +
-      //     title +
-      //     ',' +
-      //     author +
-      //     ',' +
-      //     year +
-      //     ',' +
-      //     itemStatus +
-      //     ',' +
-      //     '\n'
-      // );
+          fs.createWriteStream('./final.csv', { flags: 'a' }).write(
+            classInfoFinal +
+              ',' +
+              item.iggy +
+              ',' +
+              item.title +
+              ',' +
+              item.author +
+              ',' +
+              item.year +
+              ',' +
+              item.itemStatus +
+              ',' +
+              item.nodes +
+              ',' +
+              '\n'
+          );
+        }
+      });
     } catch (error) {
       console.log('Error inside call to Ex Libris  *************** ', error);
       fs.createWriteStream('./errors.csv', { flags: 'a' }).write(
