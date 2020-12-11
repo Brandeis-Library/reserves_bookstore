@@ -5,7 +5,7 @@ const xpath = require('xpath');
 const dom = require('xmldom').DOMParser;
 
 (async function () {
-  const workbook = XLSX.readFile('TestData.xlsx');
+  const workbook = XLSX.readFile('TestData2.xlsx');
   //console.log('workbook ---------- ', workbook);
   const sheetNames = workbook.SheetNames;
   const sheetIndex = 1;
@@ -77,7 +77,7 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for final.csv
     fs.createWriteStream('./final.csv', { flags: 'a' }).write(
-      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents   \n`
+      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents,URL   \n`
     );
 
     // For each loop to go over each object in the sheet
@@ -177,6 +177,7 @@ const dom = require('xmldom').DOMParser;
               ',' +
               item.nodes +
               ',' +
+              `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${item.iggy}` +
               '\n'
           );
         }
