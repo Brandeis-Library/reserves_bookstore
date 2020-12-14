@@ -77,7 +77,7 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for final.csv
     fs.createWriteStream('./final.csv', { flags: 'a' }).write(
-      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents,URL   \n`
+      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents,AVA/AVD/AVE,URL,Link   \n`
     );
 
     // For each loop to go over each object in the sheet
@@ -149,6 +149,17 @@ const dom = require('xmldom').DOMParser;
           console.log('nodes---- ', nodes, item.iggy);
           item.nodes = nodes.toString();
           console.log('item.nodes +++++++++++++++++  ', item.nodes, item.iggy);
+
+          if (data.includes('tag="AVA"')) {
+            item.format = 'AVA';
+          } else if (data.includes('tag="AVD"')) {
+            item.format = 'AVD';
+          } else if (data.includes('tag="AVE"')) {
+            item.format = 'AVE';
+          } else {
+            item.format = 'N/A';
+          }
+
           return item;
         }
       });
@@ -176,6 +187,8 @@ const dom = require('xmldom').DOMParser;
               item.itemStatus +
               ',' +
               item.nodes +
+              ',' +
+              item.format +
               ',' +
               `https://na01.alma.exlibrisgroup.com/view/sru/01BRAND_INST?version=1.2&operation=searchRetrieve&recordSchema=marcxml&query=alma.isbn=${item.iggy}` +
               '\n'
