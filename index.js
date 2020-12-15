@@ -77,7 +77,7 @@ const dom = require('xmldom').DOMParser;
 
     // write headers for final.csv
     fs.createWriteStream('./final.csv', { flags: 'a' }).write(
-      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents,AVA/AVD/AVE,URL,Link   \n`
+      `Class,ISBN,Title,Author,Year Pub,Req-Rec,Documents,AVD/AVE,URL,Link   \n`
     );
 
     // For each loop to go over each object in the sheet
@@ -150,9 +150,11 @@ const dom = require('xmldom').DOMParser;
           item.nodes = nodes.toString();
           console.log('item.nodes +++++++++++++++++  ', item.nodes, item.iggy);
 
-          if (data.includes('tag="AVA"')) {
-            item.format = 'AVA';
-          } else if (data.includes('tag="AVD"')) {
+          // if (data.includes('tag="AVA"')) {
+          //   item.format = 'AVA';
+          // } else
+
+          if (data.includes('tag="AVD"')) {
             item.format = 'AVD';
           } else if (data.includes('tag="AVE"')) {
             item.format = 'AVE';
